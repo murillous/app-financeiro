@@ -7,5 +7,15 @@ export function createClient() {
   );
 }
 
-// Instância singleton para uso em hooks
-export const supabase = createClient();
+// Singleton lazy — não instancia no module load (evita falha em build sem env vars)
+let _client: ReturnType<typeof createBrowserClient> | null = null;
+
+export const supabase = new Proxy(
+  {} as ReturnType<typeof createBrowserClient>,
+  {
+    get(_, prop) {
+      if (!_client) _client = createClient();
+      return (_client as Record<string | symbol, unknown>)[prop];
+    },
+  },
+);
