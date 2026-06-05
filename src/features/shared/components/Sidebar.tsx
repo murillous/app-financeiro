@@ -20,7 +20,7 @@ export function Sidebar() {
   const { user, signOut } = useAuth();
 
   return (
-    <aside className="hidden lg:flex h-screen w-64 flex-col border-r border-[var(--border)] bg-[var(--background)]">
+    <aside className="hidden lg:flex sticky top-0 h-dvh w-64 flex-shrink-0 flex-col border-r border-[var(--border)] bg-[var(--background)]">
       <div className="flex items-center gap-2 px-6 py-5 border-b border-[var(--border)]">
         <Wallet className="h-6 w-6 text-[var(--accent)]" />
         <span className="text-lg font-bold text-[var(--text-primary)]">Finanças</span>
