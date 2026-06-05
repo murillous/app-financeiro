@@ -33,7 +33,7 @@ export function CardForm({ defaultValues, onSubmit, isLoading }: CardFormProps) 
       bank: defaultValues?.bank ?? '',
       color: defaultValues?.color ?? '#3B82F6',
       credit_limit: defaultValues?.credit_limit ?? undefined,
-      closing_day: defaultValues?.closing_day ?? undefined,
+      due_day: defaultValues?.due_day ?? undefined,
     },
   });
 
@@ -119,16 +119,16 @@ export function CardForm({ defaultValues, onSubmit, isLoading }: CardFormProps) 
         </div>
 
         <div className="space-y-1.5">
-          <Label htmlFor="closing_day">Fechamento da fatura</Label>
+          <Label htmlFor="due_day">Vencimento da fatura</Label>
           <Input
-            id="closing_day"
+            id="due_day"
             type="number"
             min="1"
             max="31"
-            placeholder="Ex: 5"
-            {...register('closing_day', { valueAsNumber: true })}
+            placeholder="Ex: 10"
+            {...register('due_day', { valueAsNumber: true })}
           />
-          {errors.closing_day && <p className="text-xs text-[var(--destructive)]">{errors.closing_day.message}</p>}
+          {errors.due_day && <p className="text-xs text-[var(--destructive)]">{errors.due_day.message}</p>}
         </div>
       </div>
 

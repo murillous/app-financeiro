@@ -25,7 +25,7 @@ export function CardItem({ card, onEdit, onDelete }: CardItemProps) {
           <p className="font-medium text-[var(--text-primary)]">{card.name}</p>
           <p className="text-sm text-[var(--text-secondary)]">
             {card.bank}
-            {card.closing_day != null && ` · fecha dia ${card.closing_day}`}
+            {card.due_day != null && ` · vence dia ${card.due_day}`}
           </p>
         </div>
       </div>

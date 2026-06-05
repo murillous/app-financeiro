@@ -10,7 +10,7 @@ export const cardSchema = z.object({
   bank: z.string().min(1, 'Banco obrigatório').max(50),
   color: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Cor inválida').optional().default('#3B82F6'),
   credit_limit: z.number().min(0).optional(),
-  closing_day: z.number().int().min(1, 'Dia inválido').max(31, 'Dia inválido').optional().nullable(),
+  due_day: z.number().int().min(1, 'Dia inválido').max(31, 'Dia inválido').optional().nullable(),
 });
 
 export type CardFormInput = z.input<typeof cardSchema>;
