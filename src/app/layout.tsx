@@ -1,7 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 import { Providers } from './providers';
-import { ServiceWorkerRegister } from '@/features/shared/components/ServiceWorkerRegister';
 import './globals.css';
 
 const geistSans = Geist({
@@ -37,7 +36,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
     <html lang="pt-BR" suppressHydrationWarning>
       <body className={`${geistSans.variable} ${geistMono.variable} min-h-dvh antialiased`}>
         <Providers>{children}</Providers>
-        <ServiceWorkerRegister />
       </body>
     </html>
   );

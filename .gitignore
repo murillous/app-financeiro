@@ -37,7 +37,8 @@ yarn-error.log*
 # MCP config local
 .mcp.json
 
-# Arquivos workbox gerados (não mais usados)
+# Arquivos gerados pelo Serwist no build
+public/sw.js
 public/swe-worker-*.js
 public/workbox-*.js
 
