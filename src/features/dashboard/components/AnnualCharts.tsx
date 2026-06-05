@@ -178,7 +178,7 @@ export function AnnualCharts({ year }: AnnualChartsProps) {
               <ResponsiveContainer width="100%" height={240}>
                 <PieChart>
                   <Pie data={sourceData} dataKey="total" nameKey="source" cx="50%" cy="50%" outerRadius={80}
-                    label={({ source, percent }) => `${source} (${(((percent as number | undefined) ?? 0) * 100).toFixed(0)}%)`}
+                    label={({ name, percent }) => `${name ?? ''} (${(((percent as number | undefined) ?? 0) * 100).toFixed(0)}%)`}
                     labelLine={false}
                   >
                     {sourceData.map((_, i) => (
