@@ -13,6 +13,7 @@ export const expenseSchema = z.object({
   installments: z.number().int().min(1).max(48).default(1),
   notes: z.string().max(500).optional(),
   is_recurring: z.boolean().default(false),
+  payer_name: z.string().max(100).optional().nullable(),
 }).refine(
   (data) => {
     // Parcelamento só permitido no crédito

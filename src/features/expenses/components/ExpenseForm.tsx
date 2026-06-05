@@ -155,6 +155,18 @@ export function ExpenseForm({ onSubmit, isLoading }: ExpenseFormProps) {
       </div>
 
       <div className="space-y-1.5">
+        <Label htmlFor="payer_name">
+          Comprado por (opcional)
+          <span className="ml-1 text-xs text-[var(--text-secondary)]">— deixe vazio se foi você</span>
+        </Label>
+        <Input
+          id="payer_name"
+          placeholder="Ex: Mãe, Pai, João..."
+          {...register('payer_name')}
+        />
+      </div>
+
+      <div className="space-y-1.5">
         <Label htmlFor="exp-notes">Observações (opcional)</Label>
         <Input id="exp-notes" placeholder="..." {...register('notes')} />
       </div>

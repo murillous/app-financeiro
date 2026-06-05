@@ -1,7 +1,9 @@
 'use client';
 
+import { useRef } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { Pipette } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,6 +18,8 @@ interface CardFormProps {
 }
 
 export function CardForm({ defaultValues, onSubmit, isLoading }: CardFormProps) {
+  const colorInputRef = useRef<HTMLInputElement>(null);
+
   const {
     register,
     handleSubmit,
@@ -33,6 +37,7 @@ export function CardForm({ defaultValues, onSubmit, isLoading }: CardFormProps) 
   });
 
   const selectedColor = watch('color');
+  const isPreset = CARD_COLORS.includes(selectedColor as typeof CARD_COLORS[number]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
@@ -50,7 +55,7 @@ export function CardForm({ defaultValues, onSubmit, isLoading }: CardFormProps) 
 
       <div className="space-y-1.5">
         <Label>Cor</Label>
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           {CARD_COLORS.map((color) => (
             <button
               key={color}
@@ -64,6 +69,38 @@ export function CardForm({ defaultValues, onSubmit, isLoading }: CardFormProps) 
               aria-label={`Cor ${color}`}
             />
           ))}
+
+          {/* Seletor de cor personalizado */}
+          <div className="relative">
+            <button
+              type="button"
+              onClick={() => colorInputRef.current?.click()}
+              className={cn(
+                'h-8 w-8 rounded-full border-2 transition-transform hover:scale-110 flex items-center justify-center overflow-hidden',
+                !isPreset ? 'border-white scale-110' : 'border-transparent',
+              )}
+              style={{ backgroundColor: isPreset ? '#444' : selectedColor }}
+              aria-label="Cor personalizada"
+              title="Escolher cor personalizada"
+            >
+              {isPreset && <Pipette className="h-3.5 w-3.5 text-white" />}
+            </button>
+            <input
+              ref={colorInputRef}
+              type="color"
+              value={selectedColor}
+              onChange={(e) => setValue('color', e.target.value)}
+              className="absolute inset-0 opacity-0 w-full h-full cursor-pointer"
+              aria-label="Seletor de cor"
+              tabIndex={-1}
+            />
+          </div>
+        </div>
+
+        {/* Preview da cor selecionada */}
+        <div className="flex items-center gap-2 mt-1">
+          <div className="h-5 w-5 rounded-full border border-[var(--border)]" style={{ backgroundColor: selectedColor }} />
+          <span className="text-xs text-[var(--text-secondary)] font-mono">{selectedColor}</span>
         </div>
       </div>
 
