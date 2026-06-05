@@ -28,8 +28,7 @@ export function useExpenses(
         .select('*, categories(name, icon, color), cards(name, color)')
         .gte('date', startDate)
         .lte('date', endDate)
-        // Exclui parcelas subsequentes — exibe apenas a entrada original
-        .is('parent_transaction_id', null)
+        // Inclui todas as parcelas — cada parcela cai no seu próprio mês
         .order('date', { ascending: false });
 
       if (error) {
@@ -40,7 +39,8 @@ export function useExpenses(
     },
   });
 
-  const totalExpenses = expenses.reduce((sum, tx) => sum + tx.amount * tx.installments, 0);
+  // amount já é o valor da parcela daquele mês (total / nº parcelas)
+  const totalExpenses = expenses.reduce((sum, tx) => sum + tx.amount, 0);
 
   const createExpense = useMutation({
     mutationFn: async (formData: ExpenseFormData) => {
@@ -49,6 +49,8 @@ export function useExpenses(
 
       const baseTransaction = {
         ...formData,
+        // Campo vazio vira null para não poluir a aba de cobranças
+        payer_name: formData.payer_name?.trim() ? formData.payer_name.trim() : null,
         user_id: user.id,
         amount: formData.amount / formData.installments,
         installment_number: formData.installments > 1 ? 1 : null,

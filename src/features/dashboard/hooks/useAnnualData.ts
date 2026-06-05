@@ -38,8 +38,8 @@ export function useAnnualData(year: number, supabaseClient: SupabaseClient = sup
     queryFn: async (): Promise<MonthData[]> => {
       const [incomeRes, expenseRes] = await Promise.all([
         supabaseClient.from('incomes').select('amount, date').gte('date', startDate).lte('date', endDate),
-        supabaseClient.from('transactions').select('amount, installments, date')
-          .gte('date', startDate).lte('date', endDate).is('parent_transaction_id', null),
+        supabaseClient.from('transactions').select('amount, date')
+          .gte('date', startDate).lte('date', endDate),
       ]);
 
       const incomeByMonth = new Array(12).fill(0);
@@ -52,7 +52,7 @@ export function useAnnualData(year: number, supabaseClient: SupabaseClient = sup
         incomeByMonth[monthFromStr(r.date)] += r.amount;
       }
       for (const r of expenseRes.data ?? []) {
-        expenseByMonth[monthFromStr(r.date)] += r.amount * r.installments;
+        expenseByMonth[monthFromStr(r.date)] += r.amount;
       }
 
       let cumulative = 0;
@@ -70,15 +70,15 @@ export function useAnnualData(year: number, supabaseClient: SupabaseClient = sup
     queryFn: async (): Promise<AnnualCategoryData[]> => {
       const { data } = await supabaseClient
         .from('transactions')
-        .select('amount, installments, categories(name, color)')
-        .gte('date', startDate).lte('date', endDate).is('parent_transaction_id', null);
+        .select('amount, categories(name, color)')
+        .gte('date', startDate).lte('date', endDate);
 
       const map = new Map<string, AnnualCategoryData>();
       for (const tx of data ?? []) {
         const cat = (tx as unknown as { categories?: { name: string; color: string } }).categories;
         if (!cat) continue;
         const existing = map.get(cat.name);
-        const total = tx.amount * tx.installments;
+        const total = tx.amount;
         if (existing) { existing.total += total; }
         else { map.set(cat.name, { name: cat.name, color: cat.color, total }); }
       }

@@ -9,6 +9,7 @@ export interface CardCharge {
   payer_name: string;
   amount: number;
   installments: number;
+  installmentNumber: number;
   date: string;
   payment_method: string;
   card_name?: string;
@@ -21,8 +22,10 @@ function mapCharge(tx: Record<string, unknown>): CardCharge {
     id: tx.id as string,
     description: tx.description as string,
     payer_name: tx.payer_name as string,
-    amount: (tx.amount as number) * (tx.installments as number),
+    // amount já é o valor da parcela daquele mês
+    amount: tx.amount as number,
     installments: tx.installments as number,
+    installmentNumber: (tx.installment_number as number) ?? 1,
     date: tx.date as string,
     payment_method: tx.payment_method as string,
     card_name: (tx as { cards?: { name: string } }).cards?.name,
@@ -38,10 +41,10 @@ export function useLoans(supabaseClient: SupabaseClient = supabase) {
     queryFn: async (): Promise<CardCharge[]> => {
       const { data, error } = await supabaseClient
         .from('transactions')
-        .select('id, description, payer_name, amount, installments, date, payment_method, cards(name)')
+        .select('id, description, payer_name, amount, installments, installment_number, date, payment_method, cards(name)')
         .not('payer_name', 'is', null)
+        .neq('payer_name', '')
         .eq('payer_settled', false)
-        .is('parent_transaction_id', null)
         .order('date', { ascending: false });
       if (error) { console.error('[useLoans] pending:', error); throw error; }
       return (data ?? []).map(mapCharge);
@@ -54,10 +57,10 @@ export function useLoans(supabaseClient: SupabaseClient = supabase) {
     queryFn: async (): Promise<CardCharge[]> => {
       const { data, error } = await supabaseClient
         .from('transactions')
-        .select('id, description, payer_name, amount, installments, date, payment_method, cards(name)')
+        .select('id, description, payer_name, amount, installments, installment_number, date, payment_method, cards(name)')
         .not('payer_name', 'is', null)
+        .neq('payer_name', '')
         .eq('payer_settled', true)
-        .is('parent_transaction_id', null)
         .order('date', { ascending: false });
       if (error) { console.error('[useLoans] settled:', error); throw error; }
       return (data ?? []).map(mapCharge);
@@ -68,10 +71,11 @@ export function useLoans(supabaseClient: SupabaseClient = supabase) {
 
   const settleCharge = useMutation({
     mutationFn: async (id: string) => {
+      // Quita só a parcela selecionada (cada parcela é cobrada no seu mês)
       const { error } = await supabaseClient
         .from('transactions')
         .update({ payer_settled: true })
-        .or(`id.eq.${id},parent_transaction_id.eq.${id}`);
+        .eq('id', id);
       if (error) { console.error('[useLoans] settle:', error); throw error; }
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: CHARGES_KEY }); toast.success('Marcado como recebido!'); },
@@ -83,7 +87,7 @@ export function useLoans(supabaseClient: SupabaseClient = supabase) {
       const { error } = await supabaseClient
         .from('transactions')
         .update({ payer_settled: false })
-        .or(`id.eq.${id},parent_transaction_id.eq.${id}`);
+        .eq('id', id);
       if (error) { console.error('[useLoans] unsettle:', error); throw error; }
     },
     onSuccess: () => { queryClient.invalidateQueries({ queryKey: CHARGES_KEY }); toast.success('Voltou para a cobrar.'); },

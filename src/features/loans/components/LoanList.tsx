@@ -25,7 +25,7 @@ function ChargeCard({ charge, settled, onSettle, onUnsettle }: {
               <CreditCard className="h-3 w-3 mr-1" />{charge.card_name}
             </Badge>
           )}
-          {charge.installments > 1 && <Badge variant="outline">{charge.installments}x</Badge>}
+          {charge.installments > 1 && <Badge variant="outline">{charge.installmentNumber}/{charge.installments}</Badge>}
           {settled && <Badge variant="success">Recebido</Badge>}
         </div>
         <p className="text-sm text-[var(--text-secondary)] truncate mt-0.5">{charge.description}</p>

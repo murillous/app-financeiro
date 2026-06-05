@@ -36,17 +36,14 @@ export function useDashboard(
           .lte('date', endDate),
         supabaseClient
           .from('transactions')
-          .select('amount, installments')
+          .select('amount')
           .gte('date', startDate)
-          .lte('date', endDate)
-          .is('parent_transaction_id', null),
+          .lte('date', endDate),
       ]);
 
       const totalIncome = (incomeRes.data ?? []).reduce((sum, r) => sum + r.amount, 0);
-      const totalExpenses = (expenseRes.data ?? []).reduce(
-        (sum, r) => sum + r.amount * r.installments,
-        0,
-      );
+      // amount já é o valor da parcela do mês
+      const totalExpenses = (expenseRes.data ?? []).reduce((sum, r) => sum + r.amount, 0);
 
       return { month, year, totalIncome, totalExpenses, balance: totalIncome - totalExpenses };
     },
@@ -57,10 +54,9 @@ export function useDashboard(
     queryFn: async (): Promise<CategoryExpense[]> => {
       const { data, error } = await supabaseClient
         .from('transactions')
-        .select('amount, installments, categories(name, color)')
+        .select('amount, categories(name, color)')
         .gte('date', startDate)
-        .lte('date', endDate)
-        .is('parent_transaction_id', null);
+        .lte('date', endDate);
 
       if (error) throw error;
 
@@ -71,7 +67,7 @@ export function useDashboard(
         if (!cat) continue;
         const key = cat.name;
         const existing = grouped.get(key);
-        const total = (tx.amount as number) * (tx.installments as number);
+        const total = tx.amount as number;
         if (existing) {
           existing.total += total;
         } else {

@@ -41,14 +41,15 @@ export function ExpenseList({ month, year }: ExpenseListProps) {
     if (confirm('Remover este gasto e suas parcelas?')) deleteExpense.mutate(id);
   };
 
-  const filtered = filterMine
-    ? expenses.filter((e) => !(e as unknown as { payer_name?: string }).payer_name)
-    : expenses;
+  const hasPayer = (e: typeof expenses[number]) => {
+    const p = (e as unknown as { payer_name?: string | null }).payer_name;
+    return !!p && p.trim() !== '';
+  };
 
-  const myTotal = expenses
-    .filter((e) => !(e as unknown as { payer_name?: string }).payer_name)
-    .reduce((sum, e) => sum + e.amount * e.installments, 0);
+  const filtered = filterMine ? expenses.filter((e) => !hasPayer(e)) : expenses;
 
+  // amount já é o valor da parcela do mês
+  const myTotal = expenses.filter((e) => !hasPayer(e)).reduce((sum, e) => sum + e.amount, 0);
   const othersTotal = totalExpenses - myTotal;
 
   if (isLoading) {
@@ -125,7 +126,9 @@ export function ExpenseList({ month, year }: ExpenseListProps) {
                   <div className="flex flex-wrap items-center gap-2 mt-1">
                     <Badge variant="secondary">{METHOD_LABELS[expense.payment_method]}</Badge>
                     {expense.installments > 1 && (
-                      <Badge variant="outline">{expense.installments}x</Badge>
+                      <Badge variant="outline">
+                        {expense.installment_number ?? 1}/{expense.installments}
+                      </Badge>
                     )}
                     {payer && (
                       <Badge variant="warning" className="bg-[var(--warning)]/15 text-[var(--warning)] border-[var(--warning)]/30">
@@ -138,7 +141,7 @@ export function ExpenseList({ month, year }: ExpenseListProps) {
                 </div>
                 <div className="flex items-center gap-2 ml-2 flex-shrink-0">
                   <span className={`font-semibold ${payer ? 'text-[var(--text-secondary)]' : 'text-[var(--destructive)]'}`}>
-                    {formatCurrency(expense.amount * expense.installments)}
+                    {formatCurrency(expense.amount)}
                   </span>
                   <Button
                     variant="ghost"
