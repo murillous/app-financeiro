@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Plus, Pencil, Trash2, Send, CalendarClock } from 'lucide-react';
+import { Plus, Pencil, Trash2, Send, CalendarClock, Undo2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -14,7 +14,7 @@ import type { FixedExpense } from '../types';
 import type { FixedExpenseFormData } from '../hooks/useFixedExpenses';
 
 export function FixedExpensesWidget() {
-  const { fixedExpenses, totalFixed, isLoading, createFixedExpense, updateFixedExpense, deleteFixedExpense, launchAsExpense } = useFixedExpenses();
+  const { fixedExpenses, pendingThisMonth, paidThisMonth, totalFixed, isLoading, createFixedExpense, updateFixedExpense, deleteFixedExpense, launchAsExpense, undoPayment } = useFixedExpenses();
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [editingItem, setEditingItem] = useState<FixedExpense | null>(null);
 
@@ -28,9 +28,9 @@ export function FixedExpensesWidget() {
 
   if (isLoading) return <Skeleton className="h-40 w-full" />;
 
-  // Agrupa por urgência (vence em até 5 dias)
+  // Agrupa por urgência (vence em até 5 dias) — só entre as pendentes
   const today = new Date().getDate();
-  const upcoming = fixedExpenses.filter((e) => {
+  const upcoming = pendingThisMonth.filter((e) => {
     const diff = e.due_day - today;
     return diff >= 0 && diff <= 5;
   });
@@ -78,7 +78,13 @@ export function FixedExpensesWidget() {
             </div>
           )}
 
-          {fixedExpenses.map((expense) => {
+          {pendingThisMonth.length === 0 && (
+            <p className="text-sm text-[var(--success)] text-center py-3">
+              ✓ Todas as contas deste mês foram pagas!
+            </p>
+          )}
+
+          {pendingThisMonth.map((expense) => {
             const daysUntil = expense.due_day - today;
             const isUrgent = daysUntil >= 0 && daysUntil <= 5;
             const isOverdue = daysUntil < 0;
@@ -134,6 +140,35 @@ export function FixedExpensesWidget() {
               </div>
             );
           })}
+
+          {/* Pagas neste mês */}
+          {paidThisMonth.length > 0 && (
+            <div className="space-y-2 pt-1">
+              <p className="text-xs font-medium text-[var(--text-secondary)] px-1">
+                Pagas este mês ({paidThisMonth.length})
+              </p>
+              {paidThisMonth.map((expense) => (
+                <div key={expense.id} className="flex items-center justify-between rounded-lg border border-[var(--border)] bg-[var(--surface)] px-3 py-2 gap-2 opacity-60">
+                  <div className="min-w-0 flex-1 flex items-center gap-2">
+                    <span className="text-sm text-[var(--text-primary)] line-through truncate">{expense.name}</span>
+                    <Badge variant="success" className="text-xs flex-shrink-0">paga</Badge>
+                  </div>
+                  <div className="flex items-center gap-1 flex-shrink-0">
+                    <span className="text-sm text-[var(--text-secondary)] mr-1">{formatCurrency(expense.amount)}</span>
+                    <Button
+                      variant="ghost" size="icon"
+                      onClick={() => undoPayment.mutate(expense.id)}
+                      aria-label="Desfazer pagamento"
+                      title="Marcar como não paga"
+                      className="text-[var(--warning)] h-8 w-8"
+                    >
+                      <Undo2 className="h-3.5 w-3.5" />
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
 
           <Separator />
           <div className="flex justify-between items-center px-1 text-sm">

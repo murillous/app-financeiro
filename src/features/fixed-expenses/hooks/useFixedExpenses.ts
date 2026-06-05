@@ -15,8 +15,15 @@ export interface FixedExpenseFormData {
 
 const QUERY_KEY = ['fixed-expenses'] as const;
 
+// Mês atual como "YYYY-MM" (horário local)
+function currentMonthString(): string {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`;
+}
+
 export function useFixedExpenses(supabaseClient: SupabaseClient = supabase) {
   const queryClient = useQueryClient();
+  const currentMonth = currentMonthString();
 
   const { data: fixedExpenses = [], isLoading } = useQuery({
     queryKey: QUERY_KEY,
@@ -90,13 +97,49 @@ export function useFixedExpenses(supabaseClient: SupabaseClient = supabase) {
         is_recurring: true,
       });
       if (error) { console.error('[useFixedExpenses] launch:', error); throw error; }
+
+      // Marca a conta como paga no mês atual — some da lista até o próximo mês
+      const { error: updateError } = await supabaseClient
+        .from('fixed_expenses')
+        .update({ last_paid_month: currentMonth })
+        .eq('id', fixedExpense.id);
+      if (updateError) { console.error('[useFixedExpenses] mark paid:', updateError); throw updateError; }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['expenses'] });
-      toast.success('Lançado nos gastos do mês!');
+      queryClient.invalidateQueries({ queryKey: QUERY_KEY });
+      toast.success('Pago! Reaparece no próximo mês.');
     },
     onError: () => toast.error('Erro ao lançar gasto.'),
   });
 
-  return { fixedExpenses, totalFixed, isLoading, createFixedExpense, updateFixedExpense, deleteFixedExpense, launchAsExpense };
+  // Desfaz o pagamento do mês (volta a aparecer na lista)
+  const undoPayment = useMutation({
+    mutationFn: async (id: string) => {
+      const { error } = await supabaseClient
+        .from('fixed_expenses')
+        .update({ last_paid_month: null })
+        .eq('id', id);
+      if (error) { console.error('[useFixedExpenses] undo:', error); throw error; }
+    },
+    onSuccess: () => { queryClient.invalidateQueries({ queryKey: QUERY_KEY }); toast.success('Voltou para pendente.'); },
+    onError: () => toast.error('Erro ao desfazer.'),
+  });
+
+  // Pendentes este mês (não pagas) vs já pagas neste mês
+  const pendingThisMonth = fixedExpenses.filter((e) => e.last_paid_month !== currentMonth);
+  const paidThisMonth = fixedExpenses.filter((e) => e.last_paid_month === currentMonth);
+
+  return {
+    fixedExpenses,
+    pendingThisMonth,
+    paidThisMonth,
+    totalFixed,
+    isLoading,
+    createFixedExpense,
+    updateFixedExpense,
+    deleteFixedExpense,
+    launchAsExpense,
+    undoPayment,
+  };
 }

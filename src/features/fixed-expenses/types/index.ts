@@ -7,5 +7,6 @@ export interface FixedExpense {
   category_id: string | null;
   is_active: boolean;
   notes: string | null;
+  last_paid_month: string | null;
   created_at: string;
 }
