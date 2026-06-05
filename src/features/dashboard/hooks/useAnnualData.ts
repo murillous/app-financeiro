@@ -45,13 +45,14 @@ export function useAnnualData(year: number, supabaseClient: SupabaseClient = sup
       const incomeByMonth = new Array(12).fill(0);
       const expenseByMonth = new Array(12).fill(0);
 
+      // Extrai mês direto da string "YYYY-MM-DD" (evita off-by-one por UTC)
+      const monthFromStr = (dateStr: string) => Number(dateStr.split('-')[1]) - 1;
+
       for (const r of incomeRes.data ?? []) {
-        const m = new Date(r.date).getMonth();
-        incomeByMonth[m] += r.amount;
+        incomeByMonth[monthFromStr(r.date)] += r.amount;
       }
       for (const r of expenseRes.data ?? []) {
-        const m = new Date(r.date).getMonth();
-        expenseByMonth[m] += r.amount * r.installments;
+        expenseByMonth[monthFromStr(r.date)] += r.amount * r.installments;
       }
 
       let cumulative = 0;
