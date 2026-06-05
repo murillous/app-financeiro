@@ -52,15 +52,13 @@ export function SummaryCards({ summary, accumulatedBalance, isLoading }: Summary
     <div className="grid grid-cols-2 gap-3 lg:grid-cols-4">
       {items.map((item) => (
         <Card key={item.label}>
-          <CardContent className="pt-4">
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-xs text-[var(--text-secondary)]">{item.label}</p>
-                <p className={`text-lg font-bold ${item.color} mt-1`}>
-                  {formatCurrency(item.value)}
-                </p>
-              </div>
-              <item.icon className={`h-5 w-5 ${item.color} opacity-70`} />
+          <CardContent className="pt-4 flex flex-col items-center text-center gap-2">
+            <item.icon className={`h-6 w-6 ${item.color} opacity-80`} />
+            <div>
+              <p className="text-xs text-[var(--text-secondary)]">{item.label}</p>
+              <p className={`text-lg font-bold ${item.color} mt-0.5`}>
+                {formatCurrency(item.value)}
+              </p>
             </div>
           </CardContent>
         </Card>
