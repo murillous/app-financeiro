@@ -33,6 +33,7 @@ export function CardForm({ defaultValues, onSubmit, isLoading }: CardFormProps) 
       bank: defaultValues?.bank ?? '',
       color: defaultValues?.color ?? '#3B82F6',
       credit_limit: defaultValues?.credit_limit ?? undefined,
+      closing_day: defaultValues?.closing_day ?? undefined,
     },
   });
 
@@ -104,16 +105,31 @@ export function CardForm({ defaultValues, onSubmit, isLoading }: CardFormProps) 
         </div>
       </div>
 
-      <div className="space-y-1.5">
-        <Label htmlFor="credit_limit">Limite de Crédito (opcional)</Label>
-        <Input
-          id="credit_limit"
-          type="number"
-          min="0"
-          step="0.01"
-          placeholder="0,00"
-          {...register('credit_limit', { valueAsNumber: true })}
-        />
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <Label htmlFor="credit_limit">Limite (opcional)</Label>
+          <Input
+            id="credit_limit"
+            type="number"
+            min="0"
+            step="0.01"
+            placeholder="0,00"
+            {...register('credit_limit', { valueAsNumber: true })}
+          />
+        </div>
+
+        <div className="space-y-1.5">
+          <Label htmlFor="closing_day">Fechamento da fatura</Label>
+          <Input
+            id="closing_day"
+            type="number"
+            min="1"
+            max="31"
+            placeholder="Ex: 5"
+            {...register('closing_day', { valueAsNumber: true })}
+          />
+          {errors.closing_day && <p className="text-xs text-[var(--destructive)]">{errors.closing_day.message}</p>}
+        </div>
       </div>
 
       <Button type="submit" className="w-full" disabled={isLoading}>

@@ -49,6 +49,7 @@ export interface Card {
   bank: string;
   color: string;
   credit_limit: number | null;
+  closing_day: number | null;
   created_at: string;
 }
 
