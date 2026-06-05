@@ -2,17 +2,18 @@
 
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { LayoutDashboard, CreditCard, TrendingUp, ShoppingCart, Banknote, LogOut, Wallet } from 'lucide-react';
+import { LayoutDashboard, CreditCard, TrendingUp, ShoppingCart, Banknote, Activity, LogOut, Wallet } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import { useAuth } from '@/features/auth';
 import { ThemeToggle } from './ThemeToggle';
 
 const NAV_ITEMS = [
   { href: '/dashboard', label: 'Visão Geral', icon: LayoutDashboard },
+  { href: '/dashboard/situacao', label: 'Raio-X Financeiro', icon: Activity },
   { href: '/dashboard/income', label: 'Rendas', icon: TrendingUp },
   { href: '/dashboard/expenses', label: 'Gastos', icon: ShoppingCart },
   { href: '/dashboard/cards', label: 'Cartões', icon: CreditCard },
-  { href: '/dashboard/loans', label: 'Empréstimos', icon: Banknote },
+  { href: '/dashboard/loans', label: 'Cobrar do Cartão', icon: Banknote },
 ];
 
 export function Sidebar() {
