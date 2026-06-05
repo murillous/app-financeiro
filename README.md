@@ -1,6 +1,6 @@
 # Finanças Pessoais
 
-PWA para gestão financeira pessoal — controle de gastos, rendas, cartões e lembretes de dívidas.
+PWA para gestão financeira pessoal — controle de gastos, rendas, cartões e lembretes de dívidas
 
 ## Stack
 
