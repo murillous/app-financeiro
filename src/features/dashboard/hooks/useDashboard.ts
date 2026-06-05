@@ -83,32 +83,9 @@ export function useDashboard(
     },
   });
 
-  // Saldo acumulado: soma todos os meses anteriores
-  const { data: accumulatedBalance = 0, isLoading: loadingAccumulated } = useQuery({
-    queryKey: ['dashboard-accumulated', month, year],
-    queryFn: async (): Promise<number> => {
-      const [allIncome, allExpenses] = await Promise.all([
-        supabaseClient.from('incomes').select('amount').lte('date', endDate),
-        supabaseClient
-          .from('transactions')
-          .select('amount, installments')
-          .lte('date', endDate)
-          .is('parent_transaction_id', null),
-      ]);
-
-      const income = (allIncome.data ?? []).reduce((s, r) => s + r.amount, 0);
-      const expenses = (allExpenses.data ?? []).reduce(
-        (s, r) => s + r.amount * r.installments,
-        0,
-      );
-      return income - expenses;
-    },
-  });
-
   return {
     summary,
     categoryExpenses,
-    accumulatedBalance,
-    isLoading: loadingSummary || loadingCategories || loadingAccumulated,
+    isLoading: loadingSummary || loadingCategories,
   };
 }

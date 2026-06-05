@@ -9,6 +9,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SummaryCards, ExpenseChart, IncomeVsExpensesChart, useDashboard } from '@/features/dashboard';
 import { AnnualCharts } from '@/features/dashboard/components/AnnualCharts';
 import { FixedExpensesWidget } from '@/features/fixed-expenses';
+import { useSnapshot } from '@/features/snapshot';
 import { formatMonth } from '@/lib/utils';
 import { ThemeToggle } from '@/features/shared';
 import { useAuth } from '@/features/auth';
@@ -21,7 +22,8 @@ export default function DashboardPage() {
   const month = currentDate.getMonth() + 1;
   const year = currentDate.getFullYear();
 
-  const { summary, categoryExpenses, accumulatedBalance, isLoading } = useDashboard(month, year);
+  const { summary, categoryExpenses, isLoading } = useDashboard(month, year);
+  const { totalBalance, totalPendingDebt, netWorth, isLoading: loadingSnapshot } = useSnapshot();
   const { signOut } = useAuth();
 
   const prevMonth = () => setCurrentDate(new Date(year, currentDate.getMonth() - 1, 1));
@@ -78,7 +80,7 @@ export default function DashboardPage() {
         </TabsList>
 
         <TabsContent value="mensal" className="space-y-6 mt-4">
-          <SummaryCards summary={summary} accumulatedBalance={accumulatedBalance} isLoading={isLoading} />
+          <SummaryCards summary={summary} totalBalance={totalBalance} totalPendingDebt={totalPendingDebt} netWorth={netWorth} isLoading={isLoading || loadingSnapshot} />
           <Separator />
           <Card>
             <CardContent className="pt-6">
