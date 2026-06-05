@@ -8,6 +8,7 @@ import { Separator } from '@/components/ui/separator';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { SummaryCards, ExpenseChart, IncomeVsExpensesChart, useDashboard } from '@/features/dashboard';
 import { AnnualCharts } from '@/features/dashboard/components/AnnualCharts';
+import { FixedExpensesWidget } from '@/features/fixed-expenses';
 import { formatMonth } from '@/lib/utils';
 import { ThemeToggle } from '@/features/shared';
 import { useAuth } from '@/features/auth';
@@ -78,6 +79,12 @@ export default function DashboardPage() {
 
         <TabsContent value="mensal" className="space-y-6 mt-4">
           <SummaryCards summary={summary} accumulatedBalance={accumulatedBalance} isLoading={isLoading} />
+          <Separator />
+          <Card>
+            <CardContent className="pt-6">
+              <FixedExpensesWidget />
+            </CardContent>
+          </Card>
           <Separator />
           <div className="grid gap-6 lg:grid-cols-2">
             <Card>
