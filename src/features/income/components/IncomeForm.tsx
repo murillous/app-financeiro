@@ -13,6 +13,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { incomeSchema, INCOME_SOURCES, type IncomeFormData } from '@/lib/validations/income';
+import { todayLocalString } from '@/lib/utils';
 
 const SOURCE_LABELS: Record<string, string> = {
   trabalho: 'Trabalho / Emprego',
@@ -37,7 +38,7 @@ export function IncomeForm({ onSubmit, isLoading }: IncomeFormProps) {
   } = useForm<IncomeFormData>({
     resolver: zodResolver(incomeSchema),
     defaultValues: {
-      date: new Date().toISOString().split('T')[0],
+      date: todayLocalString(),
       source: 'trabalho',
     },
   });

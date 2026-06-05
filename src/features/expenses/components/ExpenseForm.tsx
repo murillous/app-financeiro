@@ -18,6 +18,7 @@ import {
   type ExpenseFormData,
   type ExpenseFormInput,
 } from '@/lib/validations/expenses';
+import { todayLocalString } from '@/lib/utils';
 import { useCategories } from '../hooks/useCategories';
 import { useCards } from '@/features/cards/hooks/useCards';
 
@@ -45,7 +46,7 @@ export function ExpenseForm({ onSubmit, isLoading }: ExpenseFormProps) {
   } = useForm<ExpenseFormInput, unknown, ExpenseFormData>({
     resolver: zodResolver(expenseSchema),
     defaultValues: {
-      date: new Date().toISOString().split('T')[0],
+      date: todayLocalString(),
       payment_method: 'pix',
       installments: 1,
       is_recurring: false,

@@ -4,6 +4,7 @@ import { supabase } from '@/lib/supabase/client';
 import type { IncomeFormData } from '@/lib/validations/income';
 import type { Income } from '@/features/shared/types/database';
 import type { SupabaseClient } from '@supabase/supabase-js';
+import { lastDayOfMonthString } from '@/lib/utils';
 
 function incomeQueryKey(month: number, year: number) {
   return ['incomes', month, year] as const;
@@ -17,7 +18,7 @@ export function useIncome(
   const queryClient = useQueryClient();
 
   const startDate = `${year}-${String(month).padStart(2, '0')}-01`;
-  const endDate = new Date(year, month, 0).toISOString().split('T')[0];
+  const endDate = lastDayOfMonthString(year, month);
 
   const { data: incomes = [], isLoading, error } = useQuery({
     queryKey: incomeQueryKey(month, year),
