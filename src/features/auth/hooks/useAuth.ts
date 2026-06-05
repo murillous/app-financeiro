@@ -2,8 +2,7 @@ import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 import { supabase } from '@/lib/supabase/client';
-import type { User } from '@supabase/supabase-js';
-import type { SupabaseClient } from '@supabase/supabase-js';
+import type { User, SupabaseClient } from '@supabase/supabase-js';
 
 export function useAuth(supabaseClient: SupabaseClient = supabase) {
   const router = useRouter();
@@ -23,12 +22,28 @@ export function useAuth(supabaseClient: SupabaseClient = supabase) {
     return () => subscription.unsubscribe();
   }, [supabaseClient]);
 
+  const getOrigin = () =>
+    typeof window !== 'undefined' ? window.location.origin : '';
+
+  const signInWithGitHub = async () => {
+    const { error } = await supabaseClient.auth.signInWithOAuth({
+      provider: 'github',
+      options: { redirectTo: `${getOrigin()}/auth/callback` },
+    });
+    if (error) {
+      console.error('[useAuth] Erro GitHub OAuth:', error);
+      toast.error('Erro ao entrar com GitHub.');
+    }
+  };
+
   const signInWithEmail = async (email: string, password: string) => {
     const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
     if (error) {
-      console.error('[useAuth] Erro no login:', error);
+      console.error('[useAuth] Erro login:', error);
       if (error.message.includes('Invalid login credentials')) {
         toast.error('E-mail ou senha incorretos.');
+      } else if (error.message.includes('Email not confirmed')) {
+        toast.error('Confirme seu e-mail antes de entrar. Verifique a caixa de entrada.');
       } else {
         toast.error('Erro ao entrar. Tente novamente.');
       }
@@ -39,15 +54,15 @@ export function useAuth(supabaseClient: SupabaseClient = supabase) {
   };
 
   const signUpWithEmail = async (email: string, password: string) => {
-    const { error } = await supabaseClient.auth.signUp({
+    const { data, error } = await supabaseClient.auth.signUp({
       email,
       password,
       options: {
-        emailRedirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/callback`,
+        emailRedirectTo: `${getOrigin()}/auth/callback`,
       },
     });
     if (error) {
-      console.error('[useAuth] Erro no cadastro:', error);
+      console.error('[useAuth] Erro cadastro:', error);
       if (error.message.includes('already registered')) {
         toast.error('Este e-mail já está cadastrado.');
       } else {
@@ -55,31 +70,38 @@ export function useAuth(supabaseClient: SupabaseClient = supabase) {
       }
       return false;
     }
-    toast.success('Conta criada! Verifique seu e-mail para confirmar.');
+
+    // Se confirmação de e-mail está desativada, já loga direto
+    if (data.session) {
+      router.push('/dashboard');
+      toast.success('Conta criada! Bem-vindo.');
+    } else {
+      toast.success('Conta criada! Verifique seu e-mail para confirmar.');
+    }
     return true;
   };
 
   const resetPassword = async (email: string) => {
     const { error } = await supabaseClient.auth.resetPasswordForEmail(email, {
-      redirectTo: `${typeof window !== 'undefined' ? window.location.origin : ''}/auth/reset-password`,
+      redirectTo: `${getOrigin()}/auth/reset-password`,
     });
     if (error) {
-      console.error('[useAuth] Erro ao enviar reset:', error);
+      console.error('[useAuth] Erro reset senha:', error);
       toast.error('Erro ao enviar e-mail de recuperação.');
       return false;
     }
-    toast.success('E-mail de recuperação enviado! Verifique sua caixa de entrada.');
+    toast.success('Link enviado! Verifique sua caixa de entrada (e o spam).');
     return true;
   };
 
   const updatePassword = async (newPassword: string) => {
     const { error } = await supabaseClient.auth.updateUser({ password: newPassword });
     if (error) {
-      console.error('[useAuth] Erro ao atualizar senha:', error);
+      console.error('[useAuth] Erro update senha:', error);
       toast.error('Erro ao atualizar senha.');
       return false;
     }
-    toast.success('Senha atualizada com sucesso!');
+    toast.success('Senha atualizada!');
     router.push('/dashboard');
     return true;
   };
@@ -93,6 +115,7 @@ export function useAuth(supabaseClient: SupabaseClient = supabase) {
   return {
     user,
     isLoading,
+    signInWithGitHub,
     signInWithEmail,
     signUpWithEmail,
     resetPassword,
